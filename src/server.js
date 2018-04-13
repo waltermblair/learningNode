@@ -5,11 +5,12 @@ const morgan = require('morgan');
 const path = require('path');
 const rfs = require('rotating-file-stream')
 const bodyParser = require('body-parser');
-const send = require('./send.js');
+const sendToRabbit = require('./send_to_rabbit.js');
 
 // create express app
 const app = express();
 
+//// Logging
 // https://github.com/expressjs/morgan
 var logDirectory = path.join(__dirname, '../log')
 // ensure log directory exists
@@ -43,13 +44,14 @@ app.get('/', (req, res) => {
 });
 
 app.post('/logs', (req, res) => {
+    // TODO redundant?
     // Validate request from sentry (including empty JSON object)
     if(!req.body || Object.keys(req.body).length==0) {
         return res.status(400).json({message: "Note content cannot be empty"});
     }
     
     // Call send.js to handle rabbit connection and msg
-    send(req.body);
+    sendToRabbit(req.body);
 
     // End connection to sentry
     res.end("Ready for another...\n");

@@ -2,22 +2,19 @@
 1. `docker run -d --hostname my-rabbit --name some-rabbit -p 8080:15672 -p 5672:5672 rabbitmq:3-management`
 2. `npm start`
 3. `curl -X POST -H "Content-Type: application/json" -d '{"b":"h"}' localhost:3000/logs`
-4. `npm run coverage`
 
 ## To-Do
 1. Refactor
-  1. encapsulation
-  2. callbacks
 2. Logging
 3. Error handling
 4. Testing Strategy
 5. Test Implementation
 6. Docker - production
 7. Docker - testing w/ Docker-compose
-8. RPC system for RabbitMQ reply (or callback?)
-9. Java version
-10. Refactor tests
-11. Final Documentation
+8. Retrieving RabbitMQ reply
+9. Refactor tests
+10. Final Documentation
+11. Java version
 
 ## Walter's Process
 

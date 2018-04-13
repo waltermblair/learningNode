@@ -1,7 +1,7 @@
 const amqp = require('amqplib/callback_api');
 const express = require('express');
 
-function send(req_body) {
+function send_to_rabbit(req_body) {
                                        
     amqp.connect('amqp://guest:guest@localhost:5672', function(err, conn) {
         
@@ -33,4 +33,4 @@ function send(req_body) {
     
 };
 
-module.exports = send;
+module.exports = send_to_rabbit;

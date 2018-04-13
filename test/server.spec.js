@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const chai = require('chai');
 const express = require('express');
-const send = require('../src/send.js');
+const send_to_rabbit = require('../src/send_to_rabbit.js');
 
 // TODO this should be a dev instance of rabbitmq
 var app = supertest.agent("http://localhost:3000");
@@ -27,13 +27,13 @@ describe('POST /logs', function() {
     // https://github.com/visionmedia/supertest
     it('server calls send() function', function() {
         // TODO setup and teardown spy
-        var sendSpy = sinon.spy(send);
+        var sendSpy = sinon.spy(send_to_rabbit);
         return app
             .post('/logs')
             .set('Content-Type', 'application/json')
             .send({ error: 'my_error' })
             .then(response => {
-                 assert.isTrue(true);
+                 assert.isTrue(sendSpy.called);
              });
        
     });
