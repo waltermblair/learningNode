@@ -1,7 +1,5 @@
 const amqp = require('amqplib/callback_api');
 const express = require('express');
-const bodyParser = require('body-parser');
-const server = require('./server.js');
 
 function send(req_body) {
                                        
@@ -14,7 +12,15 @@ function send(req_body) {
             if (err) { return console.log(err); }   
         
             var ex = 'logs';
-            var msg = JSON.stringify(req_body);
+            
+            // TODO I'm not sure anything that makes it pasts bodyparser 
+            //     would be a problem here
+            try { 
+                var msg = JSON.stringify(req_body);
+            } catch(e) {
+                console.log(e);
+            }
+            
             ch.assertExchange(ex, 'fanout', {durable: true});
             ch.publish(ex, '', new Buffer(msg));
             console.log(" [x] Sent %s", msg);
