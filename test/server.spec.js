@@ -1,53 +1,38 @@
-const supertest = require('supertest');
-const sinon = require('sinon');
-const chai = require('chai');
-const express = require('express');
-const send_to_rabbit = require('../src/send_to_rabbit.js');
+// TODO should be dev server (diff port?)
+const server = require('../src/server.js');
+const request = require('supertest');
+const enableDestroy = require('server-destroy');
 
-// TODO this should be a dev instance of rabbitmq
-var app = supertest.agent("http://localhost:3000");
-var assert = chai.assert;
+// TODO code coverage doesn't reach server.js
+// --- See https://github.com/istanbuljs/nyc/issues/762 for possible solution
+// Supertest - https://github.com/visionmedia/supertest
 
-describe('GET /', function() {
+describe('Express server unit tests', function() {
 
-    it('respond with 200 and json welcome message', function(done) {
-        app
+    after(function(done) {
+        enableDestroy(server);
+        server.destroy(done);
+    });
+
+    it('respond to get with 200 and json welcome message', function (done) {
+        request(server)
             .get('/')
             .set('Accept', 'application/json')
             .expect(200, {
                 message: 'Welcome to Walter\'s app...now send a POST to /logs'
             }, done)
     });
-    
-});
 
-describe('POST /logs', function() {
-    
-    // http://sinonjs.org/releases/v4.5.0/mocks/
-    // https://github.com/visionmedia/supertest
-    it('server calls send() function', function() {
-        // TODO setup and teardown spy
-        var sendSpy = sinon.spy(send_to_rabbit);
-        return app
+    it('server accepts valid JSON post', function (done) {
+        request(server)
             .post('/logs')
             .set('Content-Type', 'application/json')
-            .send({ error: 'my_error' })
-            .then(response => {
-                 assert.isTrue(sendSpy.called);
-             });
-       
-    });
-    
-    it('server accepts valid JSON to send() function', function(done) {
-        app
-            .post('/logs')
-            .set('Content-Type', 'application/json')
-            .send({ error: 'my_error' })
+            .send({content: 'my_content'})
             .expect('Ready for another...\n', done)
     });
-    
-    it('server rejects empty JSON', function(done) {
-        app
+
+    it('server rejects empty JSON post', function (done) {
+        request(server)
             .post('/logs')
             .set('Content-Type', 'application/json')
             .send('{}')
@@ -55,24 +40,39 @@ describe('POST /logs', function() {
                 message: 'Note content cannot be empty'
             }, done)
     });
-    
-    it('server rejects URLencoded data', function(done) {
-        app
-            .post('/logs')
-            .send('error=my_error')
-            .expect(400, {
-                message: 'Note content cannot be empty'
-            }, done)
-    });
-    
-    it('server rejects invalid JSON', function(done) {
-        app
+
+    it('server rejects invalid JSON post', function (done) {
+        request(server)
             .post('/logs')
             .set('Content-Type', 'application/json')
             .send('{ error: "my_error }')
             .expect(400, {
                 message: "Invalid Request data"
             }, done)
-    }); 
-    
+    });
+
+    it('server rejects URLencoded data post', function (done) {
+        request(server)
+            .post('/logs')
+            .send('error=my_error')
+            .expect(400, {
+                message: 'Note content cannot be empty'
+            }, done)
+    });
+
+    // it('server calls sendToRabbit() function for a valid post', function () {
+    //     // Is this a different copy of the function than what's in server?
+    //     // Is promise actually waiting before assert.isTrue?
+    //     let sendToRabbit = require('../src/send_to_rabbit.js');
+    //     sinon.spy(sendToRabbit);
+    //     return (request(server)
+    //         .post('/logs')
+    //         .set('Content-Type', 'application/json')
+    //         .send({content: 'my_content'}))
+    //         .then(
+    //             assert.isTrue(sendToRabbit.called),
+    //             sentToRabbit.restore()
+    //         );
+    // });
+
 });

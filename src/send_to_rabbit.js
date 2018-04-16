@@ -1,20 +1,19 @@
 const amqp = require('amqplib/callback_api');
 const express = require('express');
 
-function send_to_rabbit(req_body) {
+function send_to_rabbit(req_body, RabbitUrl, callback) {
                                        
-    amqp.connect('amqp://guest:guest@localhost:5672', function(err, conn) {
+    return amqp.connect(RabbitUrl, function(err, conn) {
         
-        if (err) { return console.log(err); }   
+        if (err) { return console.log(`The RabbitMQ service is unavailable at ${err.address}:${err.port}!\n`); }
               
         conn.createChannel(function(err, ch) {
         
-            if (err) { return console.log(err); }   
+            if (err) { return console.log(err); }
         
             var ex = 'logs';
             
-            // TODO I'm not sure anything that makes it pasts bodyparser 
-            //     would be a problem here
+            // TODO I'm not sure anything that makes it pasts bodyparser would be a problem here, so is try/catch redundant?
             try { 
                 var msg = JSON.stringify(req_body);
             } catch(e) {
@@ -26,11 +25,11 @@ function send_to_rabbit(req_body) {
             console.log(" [x] Sent %s", msg);
         });
         
-        // Close the connection
-        setTimeout(function() { conn.close(); }, 60);
+        // Close the rabbit connection
+        setTimeout(function() { conn.close(); }, 500);
       
     });
     
-};
+}
 
 module.exports = send_to_rabbit;

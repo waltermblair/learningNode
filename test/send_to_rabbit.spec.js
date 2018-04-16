@@ -1,23 +1,45 @@
-const supertest = require('supertest');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
+const expect = chai.expect;
 const sinon = require('sinon');
-const amqp = require('amqplib/callback_api');
-const express = require('express');
-const send_to_rabbit = require('../src/send_to_rabbit.js');
+const sendToRabbit = require('../src/send_to_rabbit.js');
 
-// TODO this should be a dev instance of rabbitmq
-var app = supertest.agent("http://localhost:3000");
-
-// https://blog.risingstack.com/node-hero-node-js-unit-testing-tutorial/
-
+var reqBody = {content: 'my_content'};
 
 describe('RabbitMQ Connection', function() {
 
-    it('connect to running RabbitMQ service', function(done) {
-        
+    // TODO Setup and breakdown mock RabbitMQ connections
+    before(function() {
+
+    });
+    after(function() {
+
+    });
+
+    // sinon spy for console.log
+    beforeEach(function() {
+        sinon.spy(console, 'log');
+    });
+    afterEach(function() {
+        console.log.restore();
+    });
+
+    it('connect to running RabbitMQ service', function() {
+        const RabbitUrl = 'amqp://guest:guest@localhost:5672';
+        function async(err, data) {
+            if(err) {
+
+            }
+            sendToRabbit(reqBody, RabbitUrl);
+        }
     });
     
     it('fail well when RabbitMQ service not running', function() {
-    
+        const RabbitUrl = 'amqp://guest:guest@localhost:5672';
+        sendToRabbit(reqBody, RabbitUrl);
+        chai.expect(console.log.calledWith('The RabbitMQ service is unavailable at 127.0.0.1:5672!\n')).to.eventually.be.true;
     });
+
     
 });
